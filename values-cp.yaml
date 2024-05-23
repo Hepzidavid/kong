@@ -1,0 +1,85 @@
+# Do not use Kong Ingress Controller
+ingressController:
+  enabled: true
+  env:
+    publish_service: kong/kong-dp-kong-proxy
+    kong_admin_token: kong_admin_password
+
+image:
+  repository: kong
+  tag: "3.6.1"
+
+# Mount the secret created earlier
+secretVolumes:
+  - kong-cluster-cert
+
+env:
+  admin_gui_url: http://15.235.143.186:31387
+  admin_gui_api_url: http://15.235.143.186:31555
+  admin_gui_session_conf: '{"secret":"secret","storage":"kong","cookie_secure":false}'
+  # This is a control_plane node
+  role: control_plane
+  # These certificates are used for control plane / data plane communication
+  cluster_cert: /etc/secrets/kong-cluster-cert/tls.crt
+  cluster_cert_key: /etc/secrets/kong-cluster-cert/tls.key
+
+  # Database
+  # CHANGE THESE VALUES
+  database: postgres
+  pg_database: kong
+  pg_user: kong
+  pg_password: demo123
+  pg_host: kong-cp-postgresql.kong.svc.cluster.local
+  pg_ssl: "on"
+
+  # Kong Manager password
+  password: kong_admin_password
+
+enterprise:
+  enabled: false
+  license_secret: kong-enterprise-license
+
+admin:
+  enabled: true
+  http:
+    enabled: true
+  tls:
+    enabled: false
+  ingress:
+    enabled: true
+    hostname: admin.example.com
+    path: /
+    pathType: Prefix
+    ingressClassName: kong
+
+cluster:
+  enabled: true
+  tls:
+    enabled: true
+
+clustertelemetry:
+  enabled: true
+  tls:
+    enabled: true
+
+manager:
+  enabled: true
+  http:
+    enabled: true
+  tls:
+    enabled: false
+
+  ingress:
+    enabled: true
+    hostname: manager.example.com
+    path: /
+    pathType: Prefix
+    ingressClassName: kong
+
+proxy:
+  enabled: false
+
+postgresql:
+   enabled: true
+   auth:
+     password: demo123
